@@ -6,8 +6,8 @@ import "../App.css";
 
 const TaskGenerator = () => {
   /* ---------- UI state ---------- */
-  const [category, setCategory] = useState("work");
-  const [complexity, setComplexity] = useState("medium");
+  const [category, setCategory] = useState("");
+  const [complexity, setComplexity] = useState("");
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -40,7 +40,7 @@ Example format:
   { "title": "Time Traveler", "description": "Travel back in time and meet your ancestors." }
 ]
 
-Now Generate 5 completely random, casual, and even useless tasks. 
+Now Generate 5 completely random, casual, and even useless tasks or based on the complexity and category if specified. 
 Make them feel unexpected, funny, or just for timepass/testing and sometime very important, serious, and life related. 
       `;
 
@@ -72,12 +72,20 @@ function pick(arr) {
 }
 
 // Generate a random task prompt
-function generatePrompt() {
-  return `${pick(actions)} 5 ${pick(vibes)} ${pick(outputs)} related to ${pick(topics)}.`;
-}
+const generatePrompt = () => {
+  if (category) {
+    return `${pick(actions)} 5 ${pick(vibes)} ${pick(outputs)} related to ${category}.`;
+  } else if (complexity) {
+    return `${pick(actions)} 5 ${pick(vibes)} ${pick(outputs)} related to ${complexity}.`;
+  } else if (category && complexity) {
+    return `${pick(actions)} 5 ${pick(vibes)} ${pick(outputs)} related to ${category} and ${complexity}.`;
+  } else {
+    return `${pick(actions)} 5 ${pick(vibes)} ${pick(outputs)} related to ${pick(topics)}.`;
+  }
+};
 
 // pick random one each time
-const randomPrompt = generatePrompt()
+const randomPrompt = generatePrompt();
 
       /* 2️⃣ Create a Groq client instance */
       const groq = new Groq({ apiKey, dangerouslyAllowBrowser: true });
@@ -111,7 +119,7 @@ Example format:
       
       /* 4️⃣ Extract the generated text */
       const generatedContent = response.choices[0]?.message?.content ?? "";
-      console.log(generatedContent);
+      // console.log(generatedContent);
       
       /* 5️⃣ Try to parse the JSON response */
       try {
@@ -155,10 +163,12 @@ Example format:
     }
   };
 
-  useEffect(() => {
-    // console.log(taskData);
-    console.log(tasks);
-  }, [tasks])
+  // useEffect(() => {
+  //   // console.log(taskData);
+  //   // console.log(tasks);
+  //   // console.log(category);
+  //   // console.log(complexity);
+  // }, [tasks, category, complexity]);
   /* ---------- UI ---------- */
   return (
     <div className="task-generator">
@@ -186,6 +196,7 @@ Example format:
             value={category}
             onChange={(e) => setCategory(e.target.value)}
           >
+            <option value=""></option>
             <option value="work">Work</option>
             <option value="personal">Personal</option>
             <option value="health">Health & Fitness</option>
@@ -203,6 +214,7 @@ Example format:
             value={complexity}
             onChange={(e) => setComplexity(e.target.value)}
           >
+            <option value=""></option>
             <option value="simple">Simple</option>
             <option value="medium">Medium</option>
             <option value="complex">Complex</option>
